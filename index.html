@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Materials - TiDs102</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Course Materials</h2>
+                <p>TiDs102</p>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#syllabus" class="nav-link active"><i class="fas fa-book"></i> Syllabus</a></li>
+                <li><a href="#lecture-notes" class="nav-link"><i class="fas fa-file-alt"></i> Lecture Notes</a></li>
+                <li><a href="#homework" class="nav-link"><i class="fas fa-tasks"></i> Homework</a></li>
+                <li><a href="#past-exams" class="nav-link"><i class="fas fa-file-pdf"></i> Past Exam Questions</a></li>
+                <li><a href="#" id="loginBtn" class="nav-link"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Syllabus Section -->
+            <section id="syllabus" class="content-section">
+                <h1><i class="fas fa-book"></i> Syllabus</h1>
+                <div class="syllabus-content">
+                    <div class="syllabus-item">
+                        <h3>Course Overview</h3>
+                        <p>Welcome to the course! This page contains all the materials you'll need throughout the semester.</p>
+                    </div>
+                    
+                    <div class="syllabus-item">
+                        <h3>Course Information</h3>
+                        <ul>
+                            <li><strong>Course Code:</strong> TiDs102</li>
+                            <li><strong>Instructor:</strong> Professor [Name]</li>
+                            <li><strong>Office Hours:</strong> [Schedule]</li>
+                            <li><strong>Email:</strong> [email@university.edu]</li>
+                        </ul>
+                    </div>
+
+
+                </div>
+            </section>
+
+            <!-- Lecture Notes Section -->
+            <section id="lecture-notes" class="content-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-file-alt"></i> Lecture Notes</h1>
+                    <button class="btn btn-secondary refresh-btn" onclick="loadFilesFromServer()">
+                        <i class="fas fa-sync-alt"></i> 새로고침
+                    </button>
+                </div>
+                <div class="materials-grid" id="lecture-notes-grid">
+                </div>
+            </section>
+
+            <!-- Homework Section -->
+            <section id="homework" class="content-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-tasks"></i> Homework</h1>
+                    <button class="btn btn-secondary refresh-btn" onclick="loadFilesFromServer()">
+                        <i class="fas fa-sync-alt"></i> 새로고침
+                    </button>
+                </div>
+                <div class="materials-grid" id="homework-grid">
+                </div>
+            </section>
+
+            <!-- Past Exam Questions Section -->
+            <section id="past-exams" class="content-section">
+                <div class="section-header">
+                    <h1><i class="fas fa-file-pdf"></i> Past Exam Questions</h1>
+                    <button class="btn btn-secondary refresh-btn" onclick="loadFilesFromServer()">
+                        <i class="fas fa-sync-alt"></i> 새로고침
+                    </button>
+                </div>
+                <div class="materials-grid" id="past-exams-grid">
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2><i class="fas fa-sign-in-alt"></i> 관리자 로그인</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">이메일:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">비밀번호:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginGithubToken">GitHub 토큰 (선택사항):</label>
+                    <input type="password" id="loginGithubToken" placeholder="GitHub 토큰을 입력하세요 (파일 업로드용)">
+                    <small style="color: rgba(255,255,255,0.7);">파일 업로드 시에만 필요합니다</small>
+                </div>
+                <button type="submit" class="btn btn-primary">로그인</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="admin-panel" style="display: none;">
+        <div class="admin-header">
+            <h2><i class="fas fa-user-shield"></i> 관리자 패널</h2>
+            <button id="logoutBtn" class="btn btn-secondary"><i class="fas fa-sign-out-alt"></i> 로그아웃</button>
+        </div>
+        
+        <div class="admin-content">
+            <div class="upload-section">
+                <h3>GitHub 설정</h3>
+                
+                <div class="upload-form">
+                    <div class="form-group">
+                        <label for="githubToken">GitHub Personal Access Token:</label>
+                        <input type="password" id="githubToken" placeholder="GitHub 토큰을 입력하세요" required>
+                        <small style="color: rgba(255,255,255,0.7);">GitHub Settings > Developer settings > Personal access tokens에서 생성</small>
+                    </div>
+                    
+                    <button type="button" id="setTokenBtn" class="btn btn-secondary">
+                        <i class="fas fa-key"></i> 토큰 설정
+                    </button>
+                </div>
+            </div>
+            
+            <div class="upload-section">
+                <h3>파일 업로드</h3>
+                
+                <div class="upload-form">
+                    <div class="form-group">
+                        <label for="fileCategory">카테고리 선택:</label>
+                        <select id="fileCategory" required>
+                            <option value="">카테고리를 선택하세요</option>
+                            <option value="lecture-notes">Lecture Notes</option>
+                            <option value="homework">Homework</option>
+                            <option value="past-exams">Past Exam Questions</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fileTitle">제목:</label>
+                        <input type="text" id="fileTitle" placeholder="파일 제목을 입력하세요" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fileDescription">설명:</label>
+                        <textarea id="fileDescription" placeholder="파일 설명을 입력하세요" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fileDate">날짜:</label>
+                        <input type="date" id="fileDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fileUpload">파일 선택:</label>
+                        <input type="file" id="fileUpload" required>
+                    </div>
+                    
+                    <button type="button" id="uploadBtn" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> 업로드
+                    </button>
+                </div>
+            </div>
+            
+            <div class="uploaded-files">
+                <h3>업로드된 파일 목록</h3>
+                <div id="uploadedFilesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="init-folders.js"></script>
+    <script src="upload-handler.js"></script>
+    <script src="script.js"></script>
+    <script>
+        console.log('페이지 로드 완료');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM 로드 완료');
+        });
+    </script>
+</body>
+</html>
