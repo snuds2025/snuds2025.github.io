@@ -321,6 +321,13 @@ function initializeLogin() {
         const password = document.getElementById('password').value;
         const githubToken = document.getElementById('loginGithubToken').value;
         
+        console.log('로그인 시도:', { email, password: '***', githubToken: githubToken ? '***' : 'empty' });
+        console.log('설정된 관리자 정보:', { 
+            expectedEmail: GitHubConfig.admin.email, 
+            expectedPassword: '***',
+            configLoaded: typeof GitHubConfig !== 'undefined'
+        });
+        
         // Check credentials using config
         if (email === GitHubConfig.admin.email && password === GitHubConfig.admin.password) {
             isLoggedIn = true;
