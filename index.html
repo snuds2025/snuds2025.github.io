@@ -182,7 +182,19 @@
         </div>
     </div>
 
-    <script src="config.js"></script>
+    <!-- 로컬 개발용 config를 먼저 시도, 없으면 배포용 config 사용 -->
+    <script>
+        // 로컬 개발용 config 파일 시도
+        const localScript = document.createElement('script');
+        localScript.src = 'config.local.js';
+        localScript.onerror = function() {
+            // 로컬 config가 없으면 배포용 config 로드
+            const deployScript = document.createElement('script');
+            deployScript.src = 'config.js';
+            document.head.appendChild(deployScript);
+        };
+        document.head.appendChild(localScript);
+    </script>
     <script src="init-folders.js"></script>
     <script src="upload-handler.js"></script>
     <script src="script.js"></script>

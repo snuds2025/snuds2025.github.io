@@ -1,5 +1,5 @@
 # GitHub 토큰 및 민감한 정보
-config.js
+config.local.js
 *.token
 *.secret
 .env
