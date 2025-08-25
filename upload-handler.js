@@ -249,9 +249,9 @@ let githubUploader = null;
 function setGitHubToken(token) {
     githubUploader = new GitHubFileUploader(
         token, // GitHub 토큰
-        'TiDs102', // 저장소 소유자
-        'TiDs102.github.io', // 저장소 이름
-        'master' // 브랜치
+        GitHubConfig.owner, // 저장소 소유자
+        GitHubConfig.repo, // 저장소 이름
+        GitHubConfig.branch // 브랜치
     );
     console.log('GitHub 토큰이 설정되었습니다.');
 }

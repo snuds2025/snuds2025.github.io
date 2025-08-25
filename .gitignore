@@ -1,0 +1,26 @@
+# GitHub 토큰 및 민감한 정보
+config.js
+*.token
+*.secret
+.env
+
+# 로그 파일
+*.log
+
+# 임시 파일
+*.tmp
+*.temp
+
+# 개발용 파일
+dev-config.js
+local-config.js
+
+# OS 생성 파일
+.DS_Store
+Thumbs.db
+
+# 편집기 설정
+.vscode/
+.idea/
+*.swp
+*.swo 

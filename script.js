@@ -321,8 +321,8 @@ function initializeLogin() {
         const password = document.getElementById('password').value;
         const githubToken = document.getElementById('loginGithubToken').value;
         
-        // Check credentials
-        if (email === 'TiDs1022025@gmail.com' && password === '01074328899!') {
+        // Check credentials using config
+        if (email === GitHubConfig.admin.email && password === GitHubConfig.admin.password) {
             isLoggedIn = true;
             localStorage.setItem('isLoggedIn', 'true');
             loginModal.style.display = 'none';
@@ -332,6 +332,11 @@ function initializeLogin() {
                 setGitHubToken(githubToken);
                 setFolderInitializerToken(githubToken);
                 showNotification('관리자로 로그인되었습니다! GitHub 토큰도 설정되었습니다.', 'success');
+            } else if (GitHubConfig.devToken) {
+                // 개발용 토큰이 있으면 자동 설정 (실제 운영시에는 제거)
+                setGitHubToken(GitHubConfig.devToken);
+                setFolderInitializerToken(GitHubConfig.devToken);
+                showNotification('관리자로 로그인되었습니다! (개발용 토큰 자동 설정)', 'success');
             } else {
                 showNotification('관리자로 로그인되었습니다! (GitHub 토큰 없이)', 'success');
             }
@@ -591,9 +596,9 @@ function loadFilesFromServer() {
     if (!githubUploader) {
         githubUploader = new GitHubFileUploader(
             null, // 토큰 없음
-            'TiDs102', // 저장소 소유자
-            'TiDs102.github.io', // 저장소 이름
-            'master' // 브랜치
+            GitHubConfig.owner, // 저장소 소유자
+            GitHubConfig.repo, // 저장소 이름
+            GitHubConfig.branch // 브랜치
         );
     }
     
