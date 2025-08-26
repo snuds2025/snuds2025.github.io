@@ -714,20 +714,42 @@ function downloadFile(fileId) {
             console.log('Downloading file:', file.filePath);
             console.log('File name:', file.fileName);
             
-            // GitHub raw file URL로 변환
             let downloadUrl = file.filePath;
             console.log('Original URL:', downloadUrl);
             
-            // GitHub blob URL을 raw URL로 변환
-            if (downloadUrl.includes('github.com') && downloadUrl.includes('/blob/')) {
-                downloadUrl = downloadUrl.replace('/blob/', '/raw/');
-                console.log('Converted to raw URL:', downloadUrl);
+            // URL이 GitHub URL이 아니거나 잘못된 경우 올바른 raw URL 생성
+            if (!downloadUrl.includes('raw.githubusercontent.com')) {
+                console.log('URL이 raw URL이 아닙니다. 새로 생성합니다.');
+                
+                // 파일 경로 재구성
+                const timestamp = file.id;
+                const safeTitle = file.title.replace(/[^a-zA-Z0-9가-힣\s]/g, '').replace(/\s+/g, '_');
+                const safeDescription = file.description.replace(/[^a-zA-Z0-9가-힣\s]/g, '').replace(/\s+/g, '_');
+                const safeFileName = file.fileName.replace(/[^a-zA-Z0-9._-]/g, '');
+                const fileName = `${timestamp}_${safeTitle}_${safeDescription}_${safeFileName}`;
+                
+                // GitHub 설정에서 올바른 URL 생성
+                downloadUrl = `https://raw.githubusercontent.com/${GitHubConfig.owner}/${GitHubConfig.repo}/${GitHubConfig.branch}/uploads/${file.category}/${fileName}`;
+                console.log('Generated new raw URL:', downloadUrl);
             }
             
-            // CORS 문제를 피하기 위해 직접 새 탭에서 열기
-            console.log('Opening file in new tab:', downloadUrl);
-            window.open(downloadUrl, '_blank');
-            showNotification(`${file.fileName} 파일을 새 탭에서 열었습니다.`, 'success');
+            // GitHub blob URL을 raw URL로 변환 (기존 URL이 blob URL인 경우)
+            if (downloadUrl.includes('github.com') && downloadUrl.includes('/blob/')) {
+                downloadUrl = downloadUrl.replace('/blob/', '/raw/');
+                console.log('Converted blob to raw URL:', downloadUrl);
+            }
+            
+            // URL 유효성 검증
+            console.log('Final download URL:', downloadUrl);
+            
+            // 새 탭에서 파일 열기
+            try {
+                window.open(downloadUrl, '_blank');
+                showNotification(`${file.fileName} 파일을 새 탭에서 열었습니다.`, 'success');
+            } catch (error) {
+                console.error('파일 열기 오류:', error);
+                showNotification('파일을 여는 중 오류가 발생했습니다.', 'error');
+            }
         } else {
             // Local storage file (no actual file)
             console.log('No filePath found in file object');

@@ -66,6 +66,15 @@ class GitHubFileUploader {
 
             const result = await response.json();
             
+            // 다운로드 URL 생성 (GitHub raw URL 사용)
+            const downloadUrl = `https://raw.githubusercontent.com/${this.owner}/${this.repo}/${this.branch}/${filePath}`;
+            
+            console.log('파일 업로드 성공:', {
+                filePath: filePath,
+                downloadUrl: downloadUrl,
+                originalDownloadUrl: result.content.download_url
+            });
+            
             // 파일 정보 반환
             return {
                 success: true,
@@ -76,7 +85,7 @@ class GitHubFileUploader {
                     description: description,
                     date: date,
                     fileName: file.name,
-                    filePath: result.content.download_url,
+                    filePath: downloadUrl,
                     fileSize: file.size,
                     uploadDate: new Date().toISOString(),
                     sha: result.content.sha
