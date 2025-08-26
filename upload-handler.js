@@ -108,7 +108,9 @@ class GitHubFileUploader {
             console.log('API URL:', `${this.apiBase}/repos/${this.owner}/${this.repo}/contents/uploads`);
             
             // 토큰이 있으면 사용하고, 없으면 토큰 없이 요청
-            const headers = {};
+            const headers = {
+                'User-Agent': 'SNU-DS-2025-Course-Website'
+            };
             if (this.token) {
                 headers['Authorization'] = `token ${this.token}`;
             }
@@ -118,7 +120,20 @@ class GitHubFileUploader {
             });
 
             if (!response.ok) {
-                console.log('GitHub API Error:', response.status, response.statusText);
+                const errorText = await response.text();
+                console.error('GitHub API Error Details:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    url: `${this.apiBase}/repos/${this.owner}/${this.repo}/contents/uploads`,
+                    errorText: errorText,
+                    hasToken: !!this.token
+                });
+                
+                // 404 에러인 경우 uploads 폴더가 없을 수 있음
+                if (response.status === 404) {
+                    console.log('uploads 폴더가 존재하지 않습니다. 빈 배열을 반환합니다.');
+                }
+                
                 // API 오류 시 빈 배열 반환
                 return {
                     success: true,
@@ -136,7 +151,10 @@ class GitHubFileUploader {
                 if (item.type === 'dir') {
                     console.log('Found directory:', item.name);
                     const categoryResponse = await fetch(item.url, {
-                        headers: headers
+                        headers: {
+                            ...headers,
+                            'User-Agent': 'SNU-DS-2025-Course-Website'
+                        }
                     });
                     
                     if (categoryResponse.ok) {

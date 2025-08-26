@@ -24,10 +24,11 @@ function initializeGitHubUploader() {
     // 토큰 없이 바로 파일 로드 (일반 사용자용)
     console.log('일반 사용자 모드로 파일을 로드합니다.');
     
-    // 기본 파일 목록을 바로 로드
+    // 기본 파일 목록을 바로 로드 (더 긴 대기 시간)
     setTimeout(() => {
+        console.log('자동 파일 로드를 시작합니다...');
         loadFilesFromServer();
-    }, 500);
+    }, 1000);
 }
 
 // Initialize the page
@@ -700,16 +701,32 @@ function loadFilesFromServer() {
             uploadedFiles = [];
             localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
             loadUploadedFiles();
-            showNotification('GitHub에서 파일을 찾을 수 없습니다.', 'info');
+            
+            // 더 명확한 메시지 표시
+            if (data.files && data.files.length === 0) {
+                console.log('GitHub 응답은 성공했지만 파일이 없습니다.');
+                // 파일이 없다는 메시지는 표시하지 않음 (정상 상태)
+            } else {
+                showNotification('GitHub에서 파일을 찾을 수 없습니다.', 'info');
+            }
         }
     })
     .catch(error => {
         console.error('GitHub files not available:', error);
+        
+        // 네트워크 오류인 경우 재시도 제안
+        if (error.message.includes('fetch') || error.message.includes('network')) {
+            console.log('네트워크 오류로 인한 실패. 잠시 후 재시도해주세요.');
+            showNotification('네트워크 연결을 확인하고 새로고침 버튼을 눌러주세요.', 'warning');
+        } else {
+            console.log('기타 오류:', error.message);
+            showNotification('GitHub 연결에 실패했습니다. 새로고침 버튼을 시도해보세요.', 'info');
+        }
+        
         // 오류 발생 시에도 빈 배열 사용
         uploadedFiles = [];
         localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
         loadUploadedFiles();
-        showNotification('GitHub 연결에 실패했습니다.', 'info');
     });
 }
 
