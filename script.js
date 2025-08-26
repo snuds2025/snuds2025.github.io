@@ -434,6 +434,11 @@ function uploadFile() {
         return;
     }
     
+    if (!githubUploader) {
+        showNotification('GitHub 업로더가 초기화되지 않았습니다. 먼저 GitHub 토큰을 설정해주세요.', 'error');
+        return;
+    }
+    
     const file = fileInput.files[0];
     
     // Create FormData for file upload
@@ -447,9 +452,22 @@ function uploadFile() {
     // Show loading notification
     showNotification('파일을 업로드하고 있습니다...', 'info');
     
+    // 디버깅 정보 로그
+    console.log('업로드 시작:', {
+        category,
+        title,
+        description,
+        date,
+        fileName: file.name,
+        fileSize: file.size,
+        gitHubConfigured: !!githubUploader,
+        token: githubUploader ? 'set' : 'not set'
+    });
+    
     // 폴더 초기화 후 업로드
     ensureUploadFolders(category)
     .then(() => {
+        console.log('폴더 초기화 완료, 파일 업로드 시작...');
         // Upload to GitHub using API
         return githubUploader.uploadFile(file, category, title, description, date);
     })

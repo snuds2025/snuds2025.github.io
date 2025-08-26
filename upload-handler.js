@@ -1,6 +1,6 @@
 // GitHub API를 사용한 파일 업로드 핸들러
 class GitHubFileUploader {
-    constructor(token, owner, repo, branch = 'main') {
+    constructor(token, owner, repo, branch = 'master') {
         this.token = token;
         this.owner = owner;
         this.repo = repo;

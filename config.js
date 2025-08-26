@@ -7,7 +7,7 @@ const GitHubConfig = {
     // 저장소 정보
     owner: 'snuds2025',
     repo: 'snuds2025.github.io',
-    branch: 'main',
+    branch: 'master',
     
     // 관리자 정보 (실제 운영시에는 환경변수 사용 권장)
     admin: {
