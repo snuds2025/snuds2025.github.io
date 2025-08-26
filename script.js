@@ -626,9 +626,14 @@ function loadUploadedFiles() {
         }
     });
     
-    // Add uploaded files
+    // Add uploaded files (GitHub 파일만)
     uploadedFiles.forEach(file => {
-        addFileToMainPage(file);
+        // GitHub raw URL을 가진 파일만 표시
+        if (file.filePath && file.filePath.includes('raw.githubusercontent.com')) {
+            addFileToMainPage(file);
+        } else {
+            console.log('로컬 파일 무시:', file.fileName);
+        }
     });
     
     console.log('Loaded files to main page:', uploadedFiles.length);
@@ -667,9 +672,16 @@ function loadFilesFromServer() {
                 });
             });
             
-            // GitHub 파일을 사용 (최신 파일)
+            // GitHub 파일을 사용 (최신 파일) - 로컬 파일 정보 완전히 교체
             uploadedFiles = data.files;
             localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
+            
+            console.log('GitHub에서 로드된 파일들:', uploadedFiles.map(f => ({
+                id: f.id,
+                fileName: f.fileName,
+                filePath: f.filePath,
+                hasValidURL: f.filePath && f.filePath.includes('raw.githubusercontent.com')
+            })));
             
             // Clear and reload main page
             loadUploadedFiles();
@@ -717,9 +729,10 @@ function downloadFile(fileId) {
             let downloadUrl = file.filePath;
             console.log('Original URL:', downloadUrl);
             
-            // URL이 GitHub URL이 아니거나 잘못된 경우 올바른 raw URL 생성
+            // URL이 GitHub raw URL이 아닌 경우 (로컬 파일 경로나 잘못된 URL) 올바른 raw URL 생성
             if (!downloadUrl.includes('raw.githubusercontent.com')) {
-                console.log('URL이 raw URL이 아닙니다. 새로 생성합니다.');
+                console.log('URL이 GitHub raw URL이 아닙니다. 새로 생성합니다.');
+                console.log('Original filePath:', downloadUrl);
                 
                 // 파일 경로 재구성
                 const timestamp = file.id;
@@ -727,6 +740,8 @@ function downloadFile(fileId) {
                 const safeDescription = file.description.replace(/[^a-zA-Z0-9가-힣\s]/g, '').replace(/\s+/g, '_');
                 const safeFileName = file.fileName.replace(/[^a-zA-Z0-9._-]/g, '');
                 const fileName = `${timestamp}_${safeTitle}_${safeDescription}_${safeFileName}`;
+                
+                console.log('Reconstructed fileName:', fileName);
                 
                 // GitHub 설정에서 올바른 URL 생성
                 downloadUrl = `https://raw.githubusercontent.com/${GitHubConfig.owner}/${GitHubConfig.repo}/${GitHubConfig.branch}/uploads/${file.category}/${fileName}`;
@@ -742,8 +757,16 @@ function downloadFile(fileId) {
             // URL 유효성 검증
             console.log('Final download URL:', downloadUrl);
             
+            // URL 유효성 최종 검증
+            if (!downloadUrl.startsWith('https://raw.githubusercontent.com/')) {
+                console.error('올바르지 않은 다운로드 URL:', downloadUrl);
+                showNotification('올바르지 않은 파일 URL입니다. 파일이 GitHub에 업로드되지 않았을 수 있습니다.', 'error');
+                return;
+            }
+            
             // 새 탭에서 파일 열기
             try {
+                console.log('Opening URL in new tab:', downloadUrl);
                 window.open(downloadUrl, '_blank');
                 showNotification(`${file.fileName} 파일을 새 탭에서 열었습니다.`, 'success');
             } catch (error) {
