@@ -1,6 +1,6 @@
 // GitHub API를 사용한 파일 업로드 핸들러
 class GitHubFileUploader {
-    constructor(token, owner, repo, branch = 'master') {
+    constructor(token, owner, repo, branch = 'main') {
         this.token = token;
         this.owner = owner;
         this.repo = repo;
@@ -53,7 +53,15 @@ class GitHubFileUploader {
             });
 
             if (!response.ok) {
-                throw new Error(`GitHub API Error: ${response.status} ${response.statusText}`);
+                const errorText = await response.text();
+                console.error('GitHub API Error Details:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    url: `${this.apiBase}/repos/${this.owner}/${this.repo}/contents/${filePath}`,
+                    branch: this.branch,
+                    errorText: errorText
+                });
+                throw new Error(`GitHub API Error: ${response.status} ${response.statusText} - ${errorText}`);
             }
 
             const result = await response.json();
@@ -246,12 +254,29 @@ class GitHubFileUploader {
 let githubUploader = null;
 
 // 토큰 설정 함수
-function setGitHubToken(token) {
+async function setGitHubToken(token) {
     githubUploader = new GitHubFileUploader(
         token, // GitHub 토큰
         GitHubConfig.owner, // 저장소 소유자
         GitHubConfig.repo, // 저장소 이름
         GitHubConfig.branch // 브랜치
     );
-    console.log('GitHub 토큰이 설정되었습니다.');
+    
+    // 토큰 권한 확인
+    try {
+        const response = await fetch(`https://api.github.com/repos/${GitHubConfig.owner}/${GitHubConfig.repo}`, {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            console.log('GitHub 토큰이 설정되었고 저장소 접근 권한이 확인되었습니다.');
+        } else {
+            console.warn('GitHub 토큰은 설정되었지만 저장소 접근에 문제가 있을 수 있습니다:', response.status);
+        }
+    } catch (error) {
+        console.error('토큰 권한 확인 중 오류:', error);
+    }
 }

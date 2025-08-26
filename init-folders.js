@@ -1,6 +1,6 @@
 // GitHub 저장소에 업로드 폴더 구조를 생성하는 초기화 스크립트
 class GitHubFolderInitializer {
-    constructor(token, owner, repo, branch = 'master') {
+    constructor(token, owner, repo, branch = 'main') {
         this.token = token;
         this.owner = owner;
         this.repo = repo;

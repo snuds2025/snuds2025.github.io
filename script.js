@@ -314,7 +314,7 @@ function initializeLogin() {
     });
 
     // Handle login form submission
-    loginForm.addEventListener('submit', function(e) {
+    loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const email = document.getElementById('email').value;
@@ -336,12 +336,12 @@ function initializeLogin() {
             
             // GitHub 토큰이 입력된 경우 설정
             if (githubToken) {
-                setGitHubToken(githubToken);
+                await setGitHubToken(githubToken);
                 setFolderInitializerToken(githubToken);
                 showNotification('관리자로 로그인되었습니다! GitHub 토큰도 설정되었습니다.', 'success');
             } else if (GitHubConfig.devToken) {
                 // 개발용 토큰이 있으면 자동 설정 (실제 운영시에는 제거)
-                setGitHubToken(GitHubConfig.devToken);
+                await setGitHubToken(GitHubConfig.devToken);
                 setFolderInitializerToken(GitHubConfig.devToken);
                 showNotification('관리자로 로그인되었습니다! (개발용 토큰 자동 설정)', 'success');
             } else {
@@ -364,10 +364,10 @@ function initializeLogin() {
 
     // Handle token setting
     const setTokenBtn = document.getElementById('setTokenBtn');
-    setTokenBtn.addEventListener('click', function() {
+    setTokenBtn.addEventListener('click', async function() {
         const token = document.getElementById('githubToken').value;
         if (token) {
-            setGitHubToken(token);
+            await setGitHubToken(token);
             setFolderInitializerToken(token);
             showNotification('GitHub 토큰이 설정되었습니다!', 'success');
         } else {
@@ -404,6 +404,23 @@ function hideAdminPanel() {
     adminPanel.style.display = 'none';
 }
 
+// Ensure upload folders exist
+async function ensureUploadFolders(category) {
+    if (!folderInitializer) {
+        console.log('폴더 초기화 도구가 없습니다. 폴더가 이미 존재한다고 가정합니다.');
+        return;
+    }
+    
+    try {
+        console.log(`${category} 폴더 초기화 중...`);
+        const result = await folderInitializer.createFolder(`uploads/${category}`);
+        console.log('폴더 초기화 결과:', result);
+    } catch (error) {
+        console.error('폴더 초기화 오류:', error);
+        // 폴더 초기화 실패해도 업로드는 시도
+    }
+}
+
 // Upload file function
 function uploadFile() {
     const category = document.getElementById('fileCategory').value;
@@ -430,8 +447,12 @@ function uploadFile() {
     // Show loading notification
     showNotification('파일을 업로드하고 있습니다...', 'info');
     
-    // Upload to GitHub using API
-    githubUploader.uploadFile(file, category, title, description, date)
+    // 폴더 초기화 후 업로드
+    ensureUploadFolders(category)
+    .then(() => {
+        // Upload to GitHub using API
+        return githubUploader.uploadFile(file, category, title, description, date);
+    })
     .then(data => {
         if (data.success) {
             // Add to uploaded files array
